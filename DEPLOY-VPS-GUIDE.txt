@@ -1,0 +1,202 @@
+PANDUAN DEPLOY DAN UPDATE WTPKP API KE VPS
+
+Repo GitHub:
+https://github.com/ZakyAthahillah/wtpkp-api.git
+
+Domain production:
+https://wtpkpapi.citasys.net
+
+Folder project di laptop:
+C:\Users\zaky\Documents\Project File\Web App\WTPKP
+
+Folder project di VPS:
+/var/www/wtpkp-api
+
+Folder Laravel API di VPS:
+/var/www/wtpkp-api/api
+
+
+1. PUSH PERUBAHAN DARI LAPTOP KE GITHUB
+
+Buka PowerShell di laptop:
+
+cd "C:\Users\zaky\Documents\Project File\Web App\WTPKP"
+
+Cek perubahan:
+
+git status
+
+Tambah semua perubahan:
+
+git add .
+
+Commit:
+
+git commit -m "Deskripsi perubahan"
+
+Push ke GitHub:
+
+git push origin main
+
+Catatan:
+- Jangan push api/.env.
+- api/.env sudah masuk .gitignore.
+- Jangan commit api/vendor, log, atau cache.
+
+
+2. UPDATE PROJECT DI VPS
+
+Masuk SSH ke VPS, lalu:
+
+cd /var/www/wtpkp-api
+
+Pull perubahan terbaru:
+
+git pull origin main
+
+Masuk folder API:
+
+cd api
+
+Install/update dependency Composer:
+
+composer install --no-dev --optimize-autoloader
+
+Jalankan migration kalau ada migration baru:
+
+php artisan migrate --force
+
+Clear dan rebuild cache Laravel:
+
+php artisan config:clear
+php artisan route:clear
+php artisan cache:clear
+php artisan config:cache
+php artisan route:cache
+
+Reload Nginx:
+
+sudo systemctl reload nginx
+
+Tes API:
+
+curl https://wtpkpapi.citasys.net/api/health
+
+
+3. JIKA ADA PERUBAHAN .ENV DI VPS
+
+Edit manual:
+
+nano /var/www/wtpkp-api/api/.env
+
+Setelah edit:
+
+cd /var/www/wtpkp-api/api
+php artisan config:clear
+php artisan config:cache
+sudo systemctl reload nginx
+
+Catatan:
+- .env tidak ikut GitHub.
+- Setting database production ada di .env VPS.
+
+
+4. SETTING DATABASE VPS
+
+Isi .env production:
+
+APP_NAME=WTPKP
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://wtpkpapi.citasys.net
+
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=wtpkp
+DB_USERNAME=citasys
+DB_PASSWORD=Citasys01
+
+
+5. TEST LOGIN API
+
+Register admin jika belum ada:
+
+curl -X POST "https://wtpkpapi.citasys.net/api/auth/register" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123","full_name":"Administrator","email":"admin@example.com"}'
+
+Login:
+
+curl -X POST "https://wtpkpapi.citasys.net/api/auth/login" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+
+Gunakan token dari login untuk endpoint protected:
+
+Authorization: Bearer TOKEN_DARI_LOGIN
+
+
+6. JIKA API ERROR 500
+
+Cek log Laravel:
+
+cd /var/www/wtpkp-api/api
+tail -n 100 storage/logs/laravel.log
+
+Cek log Nginx:
+
+tail -n 100 /var/log/nginx/wtpkpapi_error.log
+
+Fix permission storage/cache:
+
+cd /var/www/wtpkp-api/api
+mkdir -p storage/logs
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+
+Clear cache:
+
+php artisan config:clear
+php artisan route:clear
+php artisan cache:clear
+php artisan config:cache
+php artisan route:cache
+
+Reload Nginx:
+
+sudo systemctl reload nginx
+
+
+7. JIKA GIT PULL CONFLICT DI VPS
+
+Biasanya conflict terjadi kalau file kode diedit langsung di VPS.
+Sebaiknya:
+- Edit kode hanya di laptop.
+- Push dari laptop.
+- Pull di VPS.
+- Di VPS hanya edit api/.env.
+
+Kalau conflict terjadi, cek:
+
+git status
+
+Lalu putuskan file mana yang mau dipakai.
+
+
+8. COMMAND RINGKAS UPDATE VPS
+
+cd /var/www/wtpkp-api && \
+git pull origin main && \
+cd api && \
+composer install --no-dev --optimize-autoloader && \
+php artisan migrate --force && \
+php artisan config:clear && \
+php artisan route:clear && \
+php artisan cache:clear && \
+php artisan config:cache && \
+php artisan route:cache && \
+sudo systemctl reload nginx && \
+curl https://wtpkpapi.citasys.net/api/health
