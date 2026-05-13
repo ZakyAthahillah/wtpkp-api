@@ -1,0 +1,46 @@
+WTPKP Log Sheets API
+
+Base URL:
+- /api
+
+Authentication:
+- POST /api/auth/register is public and creates a user with username/password.
+- POST /api/auth/login is public.
+- Login uses username and password.
+- Protected endpoints require Authorization: Bearer <token>.
+- POST /api/auth/logout revokes the active JWT until it expires.
+- For log sheet create/update endpoints, operator_name is filled automatically from the logged-in user's full_name.
+
+Standard response:
+- success: boolean
+- message: string
+- data: object|array|null
+- meta: object|null
+- errors: object|null
+
+Resources:
+- allowed-domains
+- roles
+- users
+- user-auth
+- master-locations
+- master-standard-ro
+- master-standard-ro-process
+- wtp
+- ro-plant
+- ro-process
+- wwtp-ol
+- chemical-usage
+- coal-sieve
+- condenser
+- mb-running-data
+- ro-pump-running-hours
+- swro-uf-pressure
+- bwro-pressure
+- water-production
+
+Notes:
+- List endpoints are paginated.
+- POST and PUT are validated before database writes.
+- Tables are PostgreSQL-friendly snake_case versions of the SQL Server schema in databasetable.txt.
+- Configure the database through .env using DB_CONNECTION=pgsql and DB_DATABASE=wtpkp.

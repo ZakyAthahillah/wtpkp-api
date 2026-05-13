@@ -1,0 +1,26 @@
+PostgreSQL PDO Driver and Artisan Serve
+
+Issue:
+- Laravel returns "could not find driver" when DB_CONNECTION=pgsql.
+- This means PHP CLI does not have pdo_pgsql/pgsql enabled.
+
+Fix:
+1. Check loaded PHP ini:
+   php --ini
+
+2. Check active modules:
+   php -m
+
+3. Enable these extensions in the loaded php.ini:
+   extension=pdo_pgsql
+   extension=pgsql
+
+4. Clear Laravel config:
+   php artisan config:clear
+
+5. Restart php artisan serve.
+   Important: if artisan serve was started before enabling the extension, the running server process still uses the old PHP runtime state.
+
+Related symptom:
+- CLI migrate works after enabling pdo_pgsql, but Postman still gets "Failed to login".
+- Restart the running Laravel dev server.

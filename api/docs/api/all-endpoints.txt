@@ -1,0 +1,433 @@
+ALL API ENDPOINTS - WTPKP
+
+Headers used by JSON endpoints:
+Accept: application/json
+Content-Type: application/json
+
+Headers used by protected endpoints:
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer <token>
+
+1. Health Check
+GET /api/health
+
+Example:
+curl -X GET "http://localhost:8000/api/health" \
+  -H "Accept: application/json"
+
+
+2. Register
+POST /api/auth/register
+
+Body:
+{
+  "username": "operator",
+  "password": "secret-password",
+  "full_name": "Operator A",
+  "email": "operator@example.com"
+}
+
+Notes:
+- username wajib dan dipakai untuk login.
+- password minimal 6 karakter.
+- full_name wajib.
+- email opsional. Jika tidak dikirim, sistem membuat email internal otomatis: <username>@wtpkp.local.
+
+Example:
+curl -X POST "http://localhost:8000/api/auth/register" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d "{\"username\":\"operator\",\"password\":\"secret-password\",\"full_name\":\"Operator A\",\"email\":\"operator@example.com\"}"
+
+
+3. Login
+POST /api/auth/login
+
+Body:
+{
+  "username": "operator",
+  "password": "secret-password"
+}
+
+Example:
+curl -X POST "http://localhost:8000/api/auth/login" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d "{\"username\":\"operator\",\"password\":\"secret-password\"}"
+
+
+4. Current User
+GET /api/auth/me
+
+Example:
+curl -X GET "http://localhost:8000/api/auth/me" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <token>"
+
+
+5. Logout
+POST /api/auth/logout
+
+Example:
+curl -X POST "http://localhost:8000/api/auth/logout" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <token>"
+
+
+6. Resource List
+GET /api/resources
+
+Example:
+curl -X GET "http://localhost:8000/api/resources" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <token>"
+
+
+7. Paginated List Data
+GET /api/log-sheets/{resource}
+
+Supported query params:
+- page: page number
+- per_page: rows per page, max 100
+- resource-specific filters, for example log_date, lokasi, operator_name, location_code, unit_name, email, full_name
+
+Example:
+curl -X GET "http://localhost:8000/api/log-sheets/wtp?per_page=10&lokasi=LOC001" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <token>"
+
+Example:
+curl -X GET "http://localhost:8000/api/log-sheets/chemical-usage?log_date=2026-05-13" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <token>"
+
+
+8. Show Detail Data
+GET /api/log-sheets/{resource}/{id}
+
+Example:
+curl -X GET "http://localhost:8000/api/log-sheets/wtp/1" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <token>"
+
+
+9. Create Data
+POST /api/log-sheets/{resource}
+
+Example WTP body:
+{
+  "log_date": "2026-05-13 08:00:00",
+  "shift": "Shift 1",
+  "lokasi": "LOC001",
+  "ph": 7.123,
+  "cond": 12.345,
+  "tds": 10.25,
+  "p_alk": 1.2,
+  "m_alk": 2.3,
+  "th": 3.4,
+  "sio2": 4.5
+}
+
+Example:
+curl -X POST "http://localhost:8000/api/log-sheets/wtp" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d "{\"lokasi\":\"LOC001\",\"ph\":7.1,\"cond\":12.3}"
+
+Example Chemical Usage body:
+{
+  "log_date": "2026-05-13",
+  "pac": 10.500,
+  "poly": 2.250,
+  "bio_pre": 1.000
+}
+
+Example:
+curl -X POST "http://localhost:8000/api/log-sheets/chemical-usage" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d "{\"pac\":10.5,\"poly\":2.25}"
+
+
+10. Update Data
+PUT /api/log-sheets/{resource}/{id}
+
+At least one valid field must be provided in the request body.
+
+Example:
+curl -X PUT "http://localhost:8000/api/log-sheets/wtp/1" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d "{\"ph\":7.2}"
+
+
+11. Delete Data
+DELETE /api/log-sheets/{resource}/{id}
+
+Example:
+curl -X DELETE "http://localhost:8000/api/log-sheets/wtp/1" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <token>"
+
+
+RESOURCE NAMES AND COMMON BODY FIELDS
+
+Note:
+- operator_name appears in log sheet resources, but it is automatically filled from the logged-in user's full_name.
+- You do not need to send operator_name in POST/PUT bodies.
+
+allowed-domains:
+- domain_name
+
+roles:
+- role_name
+
+users:
+- username
+- email
+- full_name
+- role_id
+- created_at
+
+user-auth:
+- user_id
+- password_hash
+- salt
+
+master-locations:
+- location_code
+- location_name
+- ph_min
+- ph_max
+- cond_max
+- tds_max
+- p_alk_max
+- m_alk_max
+- th_max
+- sio2_max
+- po4_max
+
+master-standard-ro:
+- loc_id
+- location_name
+- ph_min
+- ph_max
+- cond_max
+- th_max
+- cah_max
+- mgh_max
+- t_alk_max
+- t_cl_max
+- iron_max
+- frc_max
+- turb_max
+
+master-standard-ro-process:
+- loc_id
+- location_name
+- ph_min
+- ph_max
+- cond_max
+- sio2_max
+- turb_max
+- temp_max
+
+wtp:
+- log_date
+- shift
+- lokasi
+- ph
+- cond
+- th
+- tds
+- p_alk
+- m_alk
+- sio2
+- po4
+- operator_name
+
+ro-plant:
+- log_date
+- shift
+- lokasi
+- ph
+- cond
+- th
+- cah
+- mgh
+- t_alk
+- t_cl
+- iron
+- frc
+- turbidity
+- operator_name
+
+ro-process:
+- log_date
+- shift
+- lokasi
+- ph
+- cond
+- th
+- cah
+- mgh
+- t_alk
+- t_cl
+- sio2
+- frc
+- turbidity
+- temp
+- coc
+- operator_name
+
+wwtp-ol:
+- log_date
+- input_time
+- operator_name
+- unit_name
+- cu
+- zn
+- cr
+- tss
+- fe
+- po5
+
+chemical-usage:
+- log_date
+- input_time
+- operator_name
+- pac
+- poly
+- bio_pre
+- bio_ro
+- cl2_sgr
+- ro_ant
+- naoh
+- hcl
+- tsp
+- o2_sgr
+- nh3
+- biocide
+- bio_acw_kgs
+- tsp_acw_kgs
+- naoh_acw_kgs
+- bio_mcw_kgs
+- ctscale_mcw_kgs
+- pac_wwtp_kgs
+- poly_wwtp_kgs
+- bio_wwtp_kgs
+
+coal-sieve:
+- log_date
+- input_time
+- operator_name
+- size_above_10mm
+- size_6mm_10mm
+- size_4mm_6mm
+- size_below_4mm
+- total_percentage
+
+condenser:
+- log_date
+- input_time
+- operator_name
+- unit_name
+- inlet_pres
+- outlet_pres
+- delta_p
+- approach_mcw
+- range_mcw
+- inlet_temp
+- outlet_temp
+- delta_t
+- vacuum_pres
+- acw_in_temp
+- acw_out_temp
+- acw_range
+- acw_approach
+
+mb-running-data:
+- log_date
+- input_time
+- operator_name
+- mb_i
+- mb_ii
+- mb_i_obr_m3
+- mb_2_obr_m3
+- rg_std_mb
+- last_obr_m3
+
+ro-pump-running-hours:
+- log_date
+- input_time
+- operator_name
+- intake_val
+- mmf_bw
+- mmf_fp
+- dtr_dea
+- dtr_drain
+- swro1_hp1
+- swro2_hp2
+- acw_val
+- raw_tr
+- mcw_val
+
+swro-uf-pressure:
+- log_date
+- input_time
+- operator_name
+- location_code
+- inlet_pres
+- outlet_pres
+- delta_p
+- prod_pres
+- prod_flow
+- reject_m3
+- permeate_avg_m3
+
+bwro-pressure:
+- log_date
+- input_time
+- operator_name
+- location_code
+- inlet_pres_1
+- inlet_pres_2
+- outlet_pres
+- delta_p
+- prod_pres
+- reject_m3
+- permit_m3
+
+water-production:
+- log_date
+- shift
+- operator_name
+- dm_prod
+- dm_cons
+- dm_stock_mtr
+- dm_stock_m3_calc
+- dm_stock_m3_actual
+- drain_to_deaerator
+- fresh_prod
+- fresh_cons
+- fresh_stock_mtr
+- fresh_stock_m3
+- raw_cons_wtp
+- rw_storage_mtr
+- rw_storage_m3
+- aux_ct_basin_mtr
+- aux_ct_basin_m3
+- main_ct_basin_mtr
+- main_ct_basin_m3
+- drain_tank_mtr
+- drain_tank_m3
+- deaerator_mm
+- deaerator_m3
+- input_time_dm
+- input_time_fw
+- input_time_ro
+- input_time_other
