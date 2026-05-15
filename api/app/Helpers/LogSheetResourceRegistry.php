@@ -116,7 +116,7 @@ class LogSheetResourceRegistry
         $rules = [
             'log_date' => ['nullable', 'date'],
             'shift' => ['nullable', 'string', 'max:20', Rule::in(ShiftNormalizer::allowedValues())],
-            'lokasi' => ['required', 'string', 'max:50'],
+            'lokasi' => ['required', 'string', 'max:50', Rule::exists('master_locations', 'location_code')],
             'operator_name' => ['nullable', 'string', 'max:50'],
         ];
 
@@ -147,7 +147,7 @@ class LogSheetResourceRegistry
 
         foreach ($extraFields as $field) {
             $rules[$field] = str_ends_with($field, '_name') || in_array($field, ['location_code', 'intake_val', 'raw_tr', 'mcw_val', 'last_obr_m3'], true)
-                ? ['nullable', 'string', 'max:100']
+                ? self::loggedStringRules($field)
                 : ['nullable', 'numeric'];
         }
 
@@ -197,5 +197,14 @@ class LogSheetResourceRegistry
             'turb_max' => ['nullable', 'numeric'],
             'temp_max' => ['nullable', 'numeric'],
         ]);
+    }
+
+    private static function loggedStringRules(string $field): array
+    {
+        if ($field === 'location_code') {
+            return ['nullable', 'string', 'max:100', Rule::exists('master_locations', 'location_code')];
+        }
+
+        return ['nullable', 'string', 'max:100'];
     }
 }

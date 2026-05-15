@@ -139,6 +139,22 @@ class LogSheetResourceApiTest extends TestCase
             ->assertJsonValidationErrors(['shift']);
     }
 
+    public function test_create_rejects_unknown_master_location(): void
+    {
+        $this->withJwt()->postJson('/api/log-sheets/wtp', [
+            'lokasi' => 'LOC999',
+            'shift' => 'Shift 1',
+        ])
+            ->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'message' => 'Bad request',
+                'data' => null,
+                'meta' => null,
+            ])
+            ->assertJsonValidationErrors(['lokasi']);
+    }
+
     public function test_create_returns_validation_error(): void
     {
         $this->withJwt()->postJson('/api/log-sheets/wtp', [

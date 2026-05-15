@@ -24,6 +24,7 @@ Catatan penting:
 - operator_name untuk data logsheet otomatis memakai full_name user yang sedang login.
 - Jangan kirim operator_name saat create/update lewat API, kecuali benar-benar perlu override data lama.
 - Response GET logsheet yang punya field lokasi akan menambahkan location_name dari master_locations. Input create/update tetap memakai lokasi sebagai kode lokasi.
+- Input lokasi atau location_code pada logsheet harus memakai kode yang sudah ada di master_locations.
 - Endpoint list selalu pagination.
 - Query pagination umum: page dan per_page.
 - Maksimal per_page adalah 100.
@@ -273,6 +274,7 @@ Catatan:
 - Untuk logsheet, operator_name otomatis dari full_name user login.
 - Body harus berisi field yang valid sesuai resource.
 - Field shift menerima Shift 1, Shift 2, atau Shift 3. API menyimpan nilai tersebut sebagai Shift Pagi, Shift Siang, atau Shift Malam agar konsisten dengan data lama.
+- Field lokasi dan location_code harus memakai kode yang sudah ada di master_locations.
 
 Contoh Body raw JSON untuk WTP:
 {
@@ -321,6 +323,7 @@ Catatan:
 - Field yang tidak dikirim tidak berubah.
 - Untuk logsheet, operator_name akan otomatis memakai full_name user login ketika update.
 - Field shift menerima Shift 1, Shift 2, atau Shift 3. API menyimpan nilai tersebut sebagai Shift Pagi, Shift Siang, atau Shift Malam agar konsisten dengan data lama.
+- Field lokasi dan location_code harus memakai kode yang sudah ada di master_locations.
 
 Contoh Body raw JSON:
 {
@@ -740,6 +743,7 @@ Authorization: Bearer <token>
 Catatan:
 Nilai shift yang diterima: Shift 1, Shift 2, Shift 3.
 Nilai shift yang disimpan: Shift Pagi, Shift Siang, Shift Malam.
+Nilai lokasi harus memakai location_code yang sudah ada di master_locations.
 Body raw JSON:
 {
   "log_date": "2026-05-13 08:00:00",
