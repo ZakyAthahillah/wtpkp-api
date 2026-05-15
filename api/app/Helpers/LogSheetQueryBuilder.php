@@ -12,10 +12,12 @@ class LogSheetQueryBuilder
         $table = $definition['table'];
         $query = DB::table($table)->select($table.'.*');
 
-        if (in_array('lokasi', $definition['fields'], true)) {
+        if (in_array('lokasi', $definition['fields'], true) && isset($definition['locationMaster'])) {
+            $master = $definition['locationMaster'];
+
             $query
-                ->leftJoin('master_locations', $table.'.lokasi', '=', 'master_locations.location_code')
-                ->addSelect('master_locations.location_name as location_name');
+                ->leftJoin($master['table'], $table.'.lokasi', '=', $master['table'].'.'.$master['key'])
+                ->addSelect($master['table'].'.location_name as location_name');
         }
 
         return $query;

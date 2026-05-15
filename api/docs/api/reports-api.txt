@@ -1,0 +1,91 @@
+REPORT DATA API
+
+Base URL:
+https://wtpkpapi.citasys.net
+
+Catatan:
+Endpoint report mengembalikan JSON data saja. Frontend dapat memakai data.excel.sheets untuk membuat file Excel.
+
+
+Endpoint:
+GET /api/reports/monthly-consumption
+
+Kegunaan:
+Mengambil data Monthly Consumption untuk dashboard dan export Excel frontend.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+- month: wajib, format YYYY-MM. Contoh 2026-05.
+
+Body:
+Tidak perlu.
+
+Contoh request:
+GET https://wtpkpapi.citasys.net/api/reports/monthly-consumption?month=2026-05
+Accept: application/json
+Authorization: Bearer <token>
+
+
+Endpoint:
+GET /api/reports/monthly-water-analysis
+
+Kegunaan:
+Mengambil data Monthly Water Analysis untuk dashboard dan export Excel frontend.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+- month: wajib, format YYYY-MM. Contoh 2026-05.
+
+Body:
+Tidak perlu.
+
+Contoh request:
+GET https://wtpkpapi.citasys.net/api/reports/monthly-water-analysis?month=2026-05
+Accept: application/json
+Authorization: Bearer <token>
+
+
+Endpoint:
+GET /api/reports/daily-water-analysis
+
+Kegunaan:
+Mengambil data Daily Water Analysis untuk dashboard dan export Excel frontend.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+- date: wajib, format YYYY-MM-DD. Contoh 2026-05-15.
+
+Body:
+Tidak perlu.
+
+Contoh request:
+GET https://wtpkpapi.citasys.net/api/reports/daily-water-analysis?date=2026-05-15
+Accept: application/json
+Authorization: Bearer <token>
+
+
+Format data Excel:
+data.excel.filename berisi nama file rekomendasi.
+data.excel.sheets berisi daftar sheet.
+Setiap sheet punya:
+- name
+- columns
+- rows

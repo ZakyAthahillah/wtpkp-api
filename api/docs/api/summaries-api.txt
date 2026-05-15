@@ -1,0 +1,85 @@
+SUMMARY API
+
+Base URL:
+https://wtpkpapi.citasys.net
+
+
+Endpoint:
+GET /api/summaries/wtp
+
+Kegunaan:
+Mengambil summary WTP trend 7 hari terakhir untuk satu lokasi.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+- lokasi: opsional, default LOC001. Nilai harus ada di master_locations.location_code.
+
+Body:
+Tidak perlu.
+
+Contoh request:
+GET https://wtpkpapi.citasys.net/api/summaries/wtp?lokasi=LOC001
+Accept: application/json
+Authorization: Bearer <token>
+
+
+Endpoint:
+GET /api/summaries/ro-process
+
+Kegunaan:
+Mengambil summary RO process trend 7 hari terakhir untuk parameter pH atau Cond.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+- param: opsional, isi pH atau Cond. Default pH.
+
+Body:
+Tidak perlu.
+
+Contoh request:
+GET https://wtpkpapi.citasys.net/api/summaries/ro-process?param=Cond
+Accept: application/json
+Authorization: Bearer <token>
+
+
+Endpoint:
+GET /api/summaries/wwtp-ol
+
+Kegunaan:
+Mengambil summary WWTP O/L trend 7 hari terakhir untuk unit LOC029.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+Tidak perlu.
+
+Body:
+Tidak perlu.
+
+Contoh request:
+GET https://wtpkpapi.citasys.net/api/summaries/wwtp-ol
+Accept: application/json
+Authorization: Bearer <token>
+
+
+Format data:
+- info: informasi lokasi/judul summary.
+- rows: data agregasi harian.
+- cards: nilai terakhir, limit, dan trend per parameter.

@@ -23,8 +23,11 @@ Catatan penting:
 - Login memakai username, bukan email.
 - operator_name untuk data logsheet otomatis memakai full_name user yang sedang login.
 - Jangan kirim operator_name saat create/update lewat API, kecuali benar-benar perlu override data lama.
-- Response GET logsheet yang punya field lokasi akan menambahkan location_name dari master_locations. Input create/update tetap memakai lokasi sebagai kode lokasi.
-- Input lokasi atau location_code pada logsheet harus memakai kode yang sudah ada di master_locations.
+- Response GET logsheet yang punya field lokasi akan menambahkan location_name dari tabel master yang sesuai. Input create/update tetap memakai lokasi sebagai kode lokasi.
+- Input lokasi pada WTP harus ada di master_locations.location_code.
+- Input lokasi pada RO Plant harus ada di master_standard_ro.loc_id.
+- Input lokasi pada RO Process harus ada di master_standard_ro_process.loc_id.
+- Input location_code pada logsheet pressure harus memakai kode yang sudah ada di master_locations.location_code.
 - Endpoint list selalu pagination.
 - Query pagination umum: page dan per_page.
 - Maksimal per_page adalah 100.
@@ -191,7 +194,68 @@ Endpoint:
 - GET /api/masters/standard-ro-process untuk master_standard_ro_process
 
 
-7. RESOURCE LIST
+7. SUMMARY DATA
+
+Method:
+GET
+
+URL:
+https://wtpkpapi.citasys.net/api/summaries/wtp?lokasi=LOC001
+https://wtpkpapi.citasys.net/api/summaries/ro-process?param=pH
+https://wtpkpapi.citasys.net/api/summaries/wwtp-ol
+
+Kegunaan:
+Mengambil data summary trend 7 hari terakhir untuk dashboard.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+- /api/summaries/wtp: lokasi opsional, default LOC001, harus ada di master_locations.
+- /api/summaries/ro-process: param opsional, isi pH atau Cond, default pH.
+- /api/summaries/wwtp-ol: tidak perlu query params.
+
+Body:
+Tidak perlu.
+
+
+8. REPORT DATA
+
+Method:
+GET
+
+URL:
+https://wtpkpapi.citasys.net/api/reports/monthly-consumption?month=2026-05
+https://wtpkpapi.citasys.net/api/reports/monthly-water-analysis?month=2026-05
+https://wtpkpapi.citasys.net/api/reports/daily-water-analysis?date=2026-05-15
+
+Kegunaan:
+Mengambil data report untuk dashboard dan export Excel di frontend.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+- monthly-consumption: month wajib, format YYYY-MM.
+- monthly-water-analysis: month wajib, format YYYY-MM.
+- daily-water-analysis: date wajib, format YYYY-MM-DD.
+
+Body:
+Tidak perlu.
+
+Catatan:
+Backend hanya mengembalikan data JSON. Frontend dapat membuat Excel dari data.excel.sheets.
+
+
+9. RESOURCE LIST
 
 Method:
 GET
@@ -213,7 +277,7 @@ Body:
 Tidak perlu.
 
 
-8. LIST DATA RESOURCE
+10. LIST DATA RESOURCE
 
 Method:
 GET
@@ -249,10 +313,10 @@ Body:
 Tidak perlu.
 
 Catatan response:
-Untuk resource yang punya field lokasi, response tetap menampilkan lokasi sebagai kode dan menambahkan location_name dari master_locations.
+Untuk resource yang punya field lokasi, response tetap menampilkan lokasi sebagai kode dan menambahkan location_name dari tabel master yang sesuai.
 
 
-9. DETAIL DATA RESOURCE
+11. DETAIL DATA RESOURCE
 
 Method:
 GET
@@ -277,10 +341,10 @@ Body:
 Tidak perlu.
 
 Catatan response:
-Untuk resource yang punya field lokasi, response tetap menampilkan lokasi sebagai kode dan menambahkan location_name dari master_locations.
+Untuk resource yang punya field lokasi, response tetap menampilkan lokasi sebagai kode dan menambahkan location_name dari tabel master yang sesuai.
 
 
-10. CREATE DATA RESOURCE
+12. CREATE DATA RESOURCE
 
 Method:
 POST
@@ -306,7 +370,11 @@ Catatan:
 - Untuk logsheet, operator_name otomatis dari full_name user login.
 - Body harus berisi field yang valid sesuai resource.
 - Field shift menerima Shift 1, Shift 2, atau Shift 3. API menyimpan nilai tersebut sebagai Shift Pagi, Shift Siang, atau Shift Malam agar konsisten dengan data lama.
-- Field lokasi dan location_code harus memakai kode yang sudah ada di master_locations.
+- Field lokasi harus memakai kode dari tabel master sesuai resource.
+- WTP memakai master_locations.location_code.
+- RO Plant memakai master_standard_ro.loc_id.
+- RO Process memakai master_standard_ro_process.loc_id.
+- Field location_code pada logsheet pressure memakai master_locations.location_code.
 
 Contoh Body raw JSON untuk WTP:
 {
@@ -328,7 +396,7 @@ Contoh Body raw JSON untuk Chemical Usage:
 }
 
 
-11. UPDATE DATA RESOURCE
+13. UPDATE DATA RESOURCE
 
 Method:
 PUT
@@ -355,7 +423,7 @@ Catatan:
 - Field yang tidak dikirim tidak berubah.
 - Untuk logsheet, operator_name akan otomatis memakai full_name user login ketika update.
 - Field shift menerima Shift 1, Shift 2, atau Shift 3. API menyimpan nilai tersebut sebagai Shift Pagi, Shift Siang, atau Shift Malam agar konsisten dengan data lama.
-- Field lokasi dan location_code harus memakai kode yang sudah ada di master_locations.
+- Field lokasi harus memakai kode dari tabel master sesuai resource. Field location_code pada logsheet pressure memakai master_locations.location_code.
 
 Contoh Body raw JSON:
 {
@@ -364,7 +432,7 @@ Contoh Body raw JSON:
 }
 
 
-12. DELETE DATA RESOURCE
+14. DELETE DATA RESOURCE
 
 Method:
 DELETE
@@ -515,7 +583,7 @@ Fields:
 - log_date
 - shift
 - lokasi
-- location_name (GET only, dari master_locations)
+- location_name (GET only, dari master_standard_ro)
 - ph
 - cond
 - th
@@ -538,7 +606,7 @@ Fields:
 - log_date
 - shift
 - lokasi
-- location_name (GET only, dari master_locations)
+- location_name (GET only, dari master_standard_ro_process)
 - ph
 - cond
 - th
@@ -798,6 +866,72 @@ Tidak perlu.
 Body:
 Tidak perlu.
 
+Ambil summary WTP:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/summaries/wtp?lokasi=LOC001
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Query params:
+- lokasi: opsional, default LOC001.
+Body:
+Tidak perlu.
+
+Ambil summary RO process:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/summaries/ro-process?param=Cond
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Query params:
+- param: opsional, pH atau Cond.
+Body:
+Tidak perlu.
+
+Ambil summary WWTP O/L:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/summaries/wwtp-ol
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Query params:
+Tidak perlu.
+Body:
+Tidak perlu.
+
+Ambil report Monthly Consumption:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/reports/monthly-consumption?month=2026-05
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Query params:
+- month: wajib, format YYYY-MM.
+Body:
+Tidak perlu.
+
+Ambil report Monthly Water Analysis:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/reports/monthly-water-analysis?month=2026-05
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Query params:
+- month: wajib, format YYYY-MM.
+Body:
+Tidak perlu.
+
+Ambil report Daily Water Analysis:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/reports/daily-water-analysis?date=2026-05-15
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Query params:
+- date: wajib, format YYYY-MM-DD.
+Body:
+Tidak perlu.
+
 Tambah data WTP:
 Method: POST
 URL: https://wtpkpapi.citasys.net/api/log-sheets/wtp
@@ -817,6 +951,32 @@ Body raw JSON:
   "ph": 7.1,
   "cond": 12.3,
   "sio2": 10.2
+}
+
+Tambah data RO Plant:
+Method: POST
+URL: https://wtpkpapi.citasys.net/api/log-sheets/ro-plant
+Headers:
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer <token>
+Catatan:
+Nilai lokasi harus memakai loc_id yang sudah ada di master_standard_ro.
+Body raw JSON:
+{
+  "log_date": "2026-05-15 08:00:00",
+  "shift": "Shift 1",
+  "lokasi": "RO001",
+  "ph": 7.1,
+  "cond": 12.3,
+  "th": 10.2,
+  "cah": 1.5,
+  "mgh": 1.2,
+  "t_alk": 8.4,
+  "t_cl": 4.2,
+  "iron": 0.1,
+  "frc": 0.3,
+  "turbidity": 1.1
 }
 
 Update data WTP:

@@ -89,9 +89,9 @@ class LogSheetResourceRegistry
                 'filters' => ['loc_id', 'location_name'],
                 'sort' => 'loc_id',
             ],
-            'wtp' => self::analysisResource('log_sheet_wtp', ['tds', 'p_alk', 'm_alk', 'sio2', 'po4']),
-            'ro-plant' => self::analysisResource('log_sheet_ro_plant', ['cah', 'mgh', 't_alk', 't_cl', 'iron']),
-            'ro-process' => self::analysisResource('log_sheet_ro_process', ['cah', 'mgh', 't_alk', 't_cl', 'sio2', 'temp', 'coc']),
+            'wtp' => self::analysisResource('log_sheet_wtp', ['tds', 'p_alk', 'm_alk', 'sio2', 'po4'], ['table' => 'master_locations', 'key' => 'location_code']),
+            'ro-plant' => self::analysisResource('log_sheet_ro_plant', ['cah', 'mgh', 't_alk', 't_cl', 'iron'], ['table' => 'master_standard_ro', 'key' => 'loc_id']),
+            'ro-process' => self::analysisResource('log_sheet_ro_process', ['cah', 'mgh', 't_alk', 't_cl', 'sio2', 'temp', 'coc'], ['table' => 'master_standard_ro_process', 'key' => 'loc_id']),
             'wwtp-ol' => self::loggedResource('log_sheet_wwtp_ol', ['unit_name', 'cu', 'zn', 'cr', 'tss', 'fe', 'po5']),
             'chemical-usage' => self::loggedResource('log_sheet_chemical_usage', ['pac', 'poly', 'bio_pre', 'bio_ro', 'cl2_sgr', 'ro_ant', 'naoh', 'hcl', 'tsp', 'o2_sgr', 'nh3', 'biocide', 'bio_acw_kgs', 'tsp_acw_kgs', 'naoh_acw_kgs', 'bio_mcw_kgs', 'ctscale_mcw_kgs', 'pac_wwtp_kgs', 'poly_wwtp_kgs', 'bio_wwtp_kgs']),
             'coal-sieve' => self::loggedResource('log_sheet_coal_sieve', ['size_above_10mm', 'size_6mm_10mm', 'size_4mm_6mm', 'size_below_4mm', 'total_percentage']),
@@ -109,14 +109,14 @@ class LogSheetResourceRegistry
         return self::all()[$resource] ?? null;
     }
 
-    private static function analysisResource(string $table, array $extraFields): array
+    private static function analysisResource(string $table, array $extraFields, array $locationMaster): array
     {
         $fields = array_merge(['log_date', 'shift', 'lokasi', 'ph', 'cond', 'th'], $extraFields, ['frc', 'turbidity', 'operator_name']);
         $fields = array_values(array_unique($fields));
         $rules = [
             'log_date' => ['nullable', 'date'],
             'shift' => ['nullable', 'string', 'max:20', Rule::in(ShiftNormalizer::allowedValues())],
-            'lokasi' => ['required', 'string', 'max:50', Rule::exists('master_locations', 'location_code')],
+            'lokasi' => ['required', 'string', 'max:50', Rule::exists($locationMaster['table'], $locationMaster['key'])],
             'operator_name' => ['nullable', 'string', 'max:50'],
         ];
 
@@ -133,6 +133,7 @@ class LogSheetResourceRegistry
             'rules' => $rules,
             'filters' => ['log_date', 'shift', 'lokasi', 'operator_name'],
             'sort' => 'log_id',
+            'locationMaster' => $locationMaster,
         ];
     }
 
