@@ -13,6 +13,7 @@ Authentication:
 - For resources with shift, API accepts Shift 1, Shift 2, and Shift 3, then stores them as Shift Pagi, Shift Siang, and Shift Malam.
 - GET list/detail responses for resources with lokasi include location_name from master_locations. Create/update still uses lokasi as the location code.
 - Log sheet inputs for lokasi or location_code must match an existing master_locations.location_code.
+- GET /api/masters/locations, GET /api/masters/standard-ro, and GET /api/masters/standard-ro-process return master references for log sheets.
 
 Standard response:
 - success: boolean

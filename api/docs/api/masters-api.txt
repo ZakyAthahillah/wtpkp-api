@@ -1,0 +1,82 @@
+MASTER DATA API
+
+Base URL:
+https://wtpkpapi.citasys.net
+
+Endpoint:
+GET /api/masters/locations
+
+Kegunaan:
+Mengambil data master location untuk input lokasi atau location_code logsheet.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+Tidak perlu.
+
+Body:
+Tidak perlu.
+
+Contoh request:
+GET https://wtpkpapi.citasys.net/api/masters/locations
+Accept: application/json
+Authorization: Bearer <token>
+
+
+Endpoint:
+GET /api/masters/standard-ro
+
+Kegunaan:
+Mengambil data master standard RO.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+Tidak perlu.
+
+Body:
+Tidak perlu.
+
+Contoh request:
+GET https://wtpkpapi.citasys.net/api/masters/standard-ro
+Accept: application/json
+Authorization: Bearer <token>
+
+
+Endpoint:
+GET /api/masters/standard-ro-process
+
+Kegunaan:
+Mengambil data master standard RO process.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+Tidak perlu.
+
+Body:
+Tidak perlu.
+
+Contoh request:
+GET https://wtpkpapi.citasys.net/api/masters/standard-ro-process
+Accept: application/json
+Authorization: Bearer <token>
+
+Catatan:
+- Gunakan master_locations.location_code sebagai input lokasi atau location_code pada logsheet.
+- Endpoint ini tidak mengembalikan data user auth, role, atau allowed domain.

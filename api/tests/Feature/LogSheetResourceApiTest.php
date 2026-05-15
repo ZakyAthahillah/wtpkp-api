@@ -29,6 +29,13 @@ class LogSheetResourceApiTest extends TestCase
             ->assertJsonPath('errors.token.0', 'Bearer token is required.');
     }
 
+    public function test_masters_endpoint_requires_jwt(): void
+    {
+        $this->getJson('/api/masters/locations')
+            ->assertStatus(401)
+            ->assertJsonPath('errors.token.0', 'Bearer token is required.');
+    }
+
     public function test_can_login_read_me_and_logout_with_jwt(): void
     {
         $this->createUser();
@@ -85,6 +92,47 @@ class LogSheetResourceApiTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('message', 'Login successful');
+    }
+
+    public function test_can_get_master_locations(): void
+    {
+        $this->createMasterLocation();
+
+        $this->withJwt()->getJson('/api/masters/locations')
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'message' => 'Data retrieved successfully',
+                'errors' => null,
+            ])
+            ->assertJsonPath('data.0.location_code', 'LOC001')
+            ->assertJsonPath('meta', null);
+    }
+
+    public function test_can_get_master_standard_ro(): void
+    {
+        DB::table('master_standard_ro')->insert([
+            'loc_id' => 'RO001',
+            'location_name' => 'RO PLANT',
+        ]);
+
+        $this->withJwt()->getJson('/api/masters/standard-ro')
+            ->assertOk()
+            ->assertJsonPath('data.0.loc_id', 'RO001')
+            ->assertJsonPath('data.0.location_name', 'RO PLANT');
+    }
+
+    public function test_can_get_master_standard_ro_process(): void
+    {
+        DB::table('master_standard_ro_process')->insert([
+            'loc_id' => 'ROP001',
+            'location_name' => 'RO PROCESS',
+        ]);
+
+        $this->withJwt()->getJson('/api/masters/standard-ro-process')
+            ->assertOk()
+            ->assertJsonPath('data.0.loc_id', 'ROP001')
+            ->assertJsonPath('data.0.location_name', 'RO PROCESS');
     }
 
     public function test_can_create_and_show_wtp_log_sheet(): void

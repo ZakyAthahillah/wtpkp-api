@@ -159,7 +159,39 @@ Body:
 Tidak perlu.
 
 
-6. RESOURCE LIST
+6. MASTER DATA LIST
+
+Method:
+GET
+
+URL:
+https://wtpkpapi.citasys.net/api/masters/locations
+https://wtpkpapi.citasys.net/api/masters/standard-ro
+https://wtpkpapi.citasys.net/api/masters/standard-ro-process
+
+Kegunaan:
+Mengambil data master referensi untuk logsheet per endpoint.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Query params:
+Tidak perlu.
+
+Body:
+Tidak perlu.
+
+Endpoint:
+- GET /api/masters/locations untuk master_locations
+- GET /api/masters/standard-ro untuk master_standard_ro
+- GET /api/masters/standard-ro-process untuk master_standard_ro_process
+
+
+7. RESOURCE LIST
 
 Method:
 GET
@@ -181,7 +213,7 @@ Body:
 Tidak perlu.
 
 
-7. LIST DATA RESOURCE
+8. LIST DATA RESOURCE
 
 Method:
 GET
@@ -220,7 +252,7 @@ Catatan response:
 Untuk resource yang punya field lokasi, response tetap menampilkan lokasi sebagai kode dan menambahkan location_name dari master_locations.
 
 
-8. DETAIL DATA RESOURCE
+9. DETAIL DATA RESOURCE
 
 Method:
 GET
@@ -248,7 +280,7 @@ Catatan response:
 Untuk resource yang punya field lokasi, response tetap menampilkan lokasi sebagai kode dan menambahkan location_name dari master_locations.
 
 
-9. CREATE DATA RESOURCE
+10. CREATE DATA RESOURCE
 
 Method:
 POST
@@ -296,7 +328,7 @@ Contoh Body raw JSON untuk Chemical Usage:
 }
 
 
-10. UPDATE DATA RESOURCE
+11. UPDATE DATA RESOURCE
 
 Method:
 PUT
@@ -332,7 +364,7 @@ Contoh Body raw JSON:
 }
 
 
-11. DELETE DATA RESOURCE
+12. DELETE DATA RESOURCE
 
 Method:
 DELETE
@@ -730,6 +762,39 @@ URL: https://wtpkpapi.citasys.net/api/log-sheets/wtp?per_page=10
 Headers:
 Accept: application/json
 Authorization: Bearer <token>
+Body:
+Tidak perlu.
+
+Ambil master locations:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/masters/locations
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Query params:
+Tidak perlu.
+Body:
+Tidak perlu.
+
+Ambil master standard RO:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/masters/standard-ro
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Query params:
+Tidak perlu.
+Body:
+Tidak perlu.
+
+Ambil master standard RO process:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/masters/standard-ro-process
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Query params:
+Tidak perlu.
 Body:
 Tidak perlu.
 
