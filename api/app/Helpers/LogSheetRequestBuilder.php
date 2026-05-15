@@ -41,6 +41,13 @@ class LogSheetRequestBuilder
 
         return collect($validator->validated())
             ->only($definition['fields'])
+            ->mapWithKeys(function (mixed $value, string $field) {
+                if ($field === 'shift') {
+                    return [$field => ShiftNormalizer::normalize($value)];
+                }
+
+                return [$field => $value];
+            })
             ->all();
     }
 

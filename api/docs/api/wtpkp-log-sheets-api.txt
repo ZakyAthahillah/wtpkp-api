@@ -10,6 +10,8 @@ Authentication:
 - Protected endpoints require Authorization: Bearer <token>.
 - POST /api/auth/logout revokes the active JWT until it expires.
 - For log sheet create/update endpoints, operator_name is filled automatically from the logged-in user's full_name.
+- For resources with shift, API accepts Shift 1, Shift 2, and Shift 3, then stores them as Shift Pagi, Shift Siang, and Shift Malam.
+- GET list/detail responses for resources with lokasi include location_name from master_locations. Create/update still uses lokasi as the location code.
 
 Standard response:
 - success: boolean

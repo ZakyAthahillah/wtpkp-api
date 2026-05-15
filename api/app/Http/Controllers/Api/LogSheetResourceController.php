@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\ApiResponse;
+use App\Helpers\LogSheetQueryBuilder;
 use App\Helpers\LogSheetRequestBuilder;
 use App\Helpers\LogSheetResourceRegistry;
 use App\Http\Controllers\Controller;
@@ -40,16 +41,16 @@ class LogSheetResourceController extends Controller
         try {
             $definition = LogSheetRequestBuilder::definition($resource);
             $perPage = min(max((int) $request->query('per_page', 15), 1), 100);
-            $query = DB::table($definition['table']);
+            $query = LogSheetQueryBuilder::query($definition);
 
             foreach ($definition['filters'] as $filter) {
                 if ($request->filled($filter) && in_array($filter, $definition['fields'], true)) {
-                    $query->where($filter, $request->query($filter));
+                    $query->where(LogSheetQueryBuilder::qualify($definition, $filter), $request->query($filter));
                 }
             }
 
             $rows = $query
-                ->orderBy($definition['sort'])
+                ->orderBy(LogSheetQueryBuilder::qualify($definition, $definition['sort']))
                 ->paginate($perPage);
 
             return ApiResponse::success('Data retrieved successfully', $rows->items(), [
@@ -94,7 +95,9 @@ class LogSheetResourceController extends Controller
     {
         try {
             $definition = LogSheetRequestBuilder::definition($resource);
-            $row = DB::table($definition['table'])->where($definition['primaryKey'], $id)->first();
+            $row = LogSheetQueryBuilder::query($definition)
+                ->where(LogSheetQueryBuilder::qualify($definition, $definition['primaryKey']), $id)
+                ->first();
 
             if (! $row) {
                 return ApiResponse::error('Data not found', ['id' => ['The selected data was not found.']], 404);

@@ -93,8 +93,10 @@ class LogSheetResourceApiTest extends TestCase
 
         $response = $this->withJwt()->postJson('/api/log-sheets/wtp', [
             'lokasi' => 'LOC001',
+            'shift' => 'Shift 2',
             'ph' => 7.12,
             'cond' => 12.34,
+            'sio2' => 10.2,
         ]);
 
         $id = $response
@@ -103,6 +105,8 @@ class LogSheetResourceApiTest extends TestCase
                 'success' => true,
                 'message' => 'Data created successfully',
                 'data' => [
+                    'shift' => 'Shift Siang',
+                    'sio2' => 10.2,
                     'operator_name' => 'Operator A',
                 ],
                 'errors' => null,
@@ -111,7 +115,28 @@ class LogSheetResourceApiTest extends TestCase
 
         $this->withJwt()->getJson('/api/log-sheets/wtp/'.$id)
             ->assertOk()
+            ->assertJsonPath('data.shift', 'Shift Siang')
+            ->assertJsonPath('data.location_name', 'DM WATER')
+            ->assertJsonPath('data.sio2', 10.2)
             ->assertJsonPath('data.lokasi', 'LOC001');
+    }
+
+    public function test_create_rejects_unknown_shift(): void
+    {
+        $this->createMasterLocation();
+
+        $this->withJwt()->postJson('/api/log-sheets/wtp', [
+            'lokasi' => 'LOC001',
+            'shift' => 'Shift 4',
+        ])
+            ->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'message' => 'Bad request',
+                'data' => null,
+                'meta' => null,
+            ])
+            ->assertJsonValidationErrors(['shift']);
     }
 
     public function test_create_returns_validation_error(): void
@@ -141,6 +166,7 @@ class LogSheetResourceApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('meta.per_page', 1)
             ->assertJsonPath('meta.total', 2)
+            ->assertJsonPath('data.0.location_name', 'DM WATER')
             ->assertJsonCount(1, 'data');
     }
 

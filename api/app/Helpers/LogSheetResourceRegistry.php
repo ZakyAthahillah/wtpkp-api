@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use Illuminate\Validation\Rule;
+
 class LogSheetResourceRegistry
 {
     public static function all(): array
@@ -87,7 +89,7 @@ class LogSheetResourceRegistry
                 'filters' => ['loc_id', 'location_name'],
                 'sort' => 'loc_id',
             ],
-            'wtp' => self::analysisResource('log_sheet_wtp', ['tds', 'p_alk', 'm_alk', 'po4']),
+            'wtp' => self::analysisResource('log_sheet_wtp', ['tds', 'p_alk', 'm_alk', 'sio2', 'po4']),
             'ro-plant' => self::analysisResource('log_sheet_ro_plant', ['cah', 'mgh', 't_alk', 't_cl', 'iron']),
             'ro-process' => self::analysisResource('log_sheet_ro_process', ['cah', 'mgh', 't_alk', 't_cl', 'sio2', 'temp', 'coc']),
             'wwtp-ol' => self::loggedResource('log_sheet_wwtp_ol', ['unit_name', 'cu', 'zn', 'cr', 'tss', 'fe', 'po5']),
@@ -113,7 +115,7 @@ class LogSheetResourceRegistry
         $fields = array_values(array_unique($fields));
         $rules = [
             'log_date' => ['nullable', 'date'],
-            'shift' => ['nullable', 'string', 'max:20'],
+            'shift' => ['nullable', 'string', 'max:20', Rule::in(ShiftNormalizer::allowedValues())],
             'lokasi' => ['required', 'string', 'max:50'],
             'operator_name' => ['nullable', 'string', 'max:50'],
         ];
@@ -162,7 +164,7 @@ class LogSheetResourceRegistry
     private static function waterProductionResource(): array
     {
         $fields = ['log_date', 'shift', 'operator_name', 'dm_prod', 'dm_cons', 'dm_stock_mtr', 'dm_stock_m3_calc', 'dm_stock_m3_actual', 'drain_to_deaerator', 'fresh_prod', 'fresh_cons', 'fresh_stock_mtr', 'fresh_stock_m3', 'raw_cons_wtp', 'rw_storage_mtr', 'rw_storage_m3', 'aux_ct_basin_mtr', 'aux_ct_basin_m3', 'main_ct_basin_mtr', 'main_ct_basin_m3', 'drain_tank_mtr', 'drain_tank_m3', 'deaerator_mm', 'deaerator_m3', 'input_time_dm', 'input_time_fw', 'input_time_ro', 'input_time_other'];
-        $rules = ['log_date' => ['nullable', 'date'], 'shift' => ['nullable', 'string', 'max:10'], 'operator_name' => ['nullable', 'string', 'max:50']];
+        $rules = ['log_date' => ['nullable', 'date'], 'shift' => ['nullable', 'string', 'max:20', Rule::in(ShiftNormalizer::allowedValues())], 'operator_name' => ['nullable', 'string', 'max:50']];
 
         foreach ($fields as $field) {
             if (! isset($rules[$field])) {

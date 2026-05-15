@@ -1,26 +1,75 @@
-ALL API ENDPOINTS - WTPKP
+ALL API ENDPOINTS - WTPKP PRODUCTION
 
-Headers used by JSON endpoints:
+Base URL:
+https://wtpkpapi.citasys.net
+
+Panduan ini dibuat untuk tes via Postman.
+
+Default headers untuk request JSON:
 Accept: application/json
 Content-Type: application/json
 
-Headers used by protected endpoints:
-Accept: application/json
-Content-Type: application/json
+Header tambahan untuk endpoint yang butuh login:
 Authorization: Bearer <token>
 
-1. Health Check
-GET /api/health
+Urutan penggunaan paling umum:
+1. Register user jika belum ada.
+2. Login pakai username dan password.
+3. Ambil token dari response login.
+4. Pakai token di header Authorization untuk akses endpoint data.
+5. Logout jika token sudah tidak dipakai.
 
-Example:
-curl -X GET "http://localhost:8000/api/health" \
-  -H "Accept: application/json"
+Catatan penting:
+- Login memakai username, bukan email.
+- operator_name untuk data logsheet otomatis memakai full_name user yang sedang login.
+- Jangan kirim operator_name saat create/update lewat API, kecuali benar-benar perlu override data lama.
+- Response GET logsheet yang punya field lokasi akan menambahkan location_name dari master_locations. Input create/update tetap memakai lokasi sebagai kode lokasi.
+- Endpoint list selalu pagination.
+- Query pagination umum: page dan per_page.
+- Maksimal per_page adalah 100.
+- Di Postman, pilih Body > raw > JSON untuk endpoint POST dan PUT.
 
 
-2. Register
-POST /api/auth/register
+1. HEALTH CHECK
+
+Method:
+GET
+
+URL:
+https://wtpkpapi.citasys.net/api/health
+
+Kegunaan:
+Cek apakah API hidup.
+
+Butuh token:
+Tidak.
+
+Headers:
+Accept: application/json
 
 Body:
+Tidak perlu.
+
+
+2. REGISTER USER
+
+Method:
+POST
+
+URL:
+https://wtpkpapi.citasys.net/api/auth/register
+
+Kegunaan:
+Membuat user baru untuk login aplikasi/API.
+
+Butuh token:
+Tidak.
+
+Headers:
+Accept: application/json
+Content-Type: application/json
+
+Body raw JSON:
 {
   "username": "operator",
   "password": "secret-password",
@@ -28,177 +77,331 @@ Body:
   "email": "operator@example.com"
 }
 
-Notes:
-- username wajib dan dipakai untuk login.
-- password minimal 6 karakter.
+Rules:
+- username wajib.
+- password wajib, minimal 6 karakter.
 - full_name wajib.
-- email opsional. Jika tidak dikirim, sistem membuat email internal otomatis: <username>@wtpkp.local.
-
-Example:
-curl -X POST "http://localhost:8000/api/auth/register" \
-  -H "Accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d "{\"username\":\"operator\",\"password\":\"secret-password\",\"full_name\":\"Operator A\",\"email\":\"operator@example.com\"}"
+- email opsional.
+- Jika email tidak dikirim, sistem membuat email internal otomatis.
 
 
-3. Login
-POST /api/auth/login
+3. LOGIN
 
-Body:
+Method:
+POST
+
+URL:
+https://wtpkpapi.citasys.net/api/auth/login
+
+Kegunaan:
+Login dan mendapatkan token.
+
+Butuh token:
+Tidak.
+
+Headers:
+Accept: application/json
+Content-Type: application/json
+
+Body raw JSON:
 {
   "username": "operator",
   "password": "secret-password"
 }
 
-Example:
-curl -X POST "http://localhost:8000/api/auth/login" \
-  -H "Accept: application/json" \
-  -H "Content-Type: application/json" \
-  -d "{\"username\":\"operator\",\"password\":\"secret-password\"}"
+Cara pakai token:
+Ambil token dari response login, lalu kirim di header endpoint berikutnya:
+Authorization: Bearer <token>
 
 
-4. Current User
-GET /api/auth/me
+4. CURRENT USER
 
-Example:
-curl -X GET "http://localhost:8000/api/auth/me" \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer <token>"
+Method:
+GET
 
+URL:
+https://wtpkpapi.citasys.net/api/auth/me
 
-5. Logout
-POST /api/auth/logout
+Kegunaan:
+Melihat user yang sedang login berdasarkan token.
 
-Example:
-curl -X POST "http://localhost:8000/api/auth/logout" \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer <token>"
+Butuh token:
+Ya.
 
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
 
-6. Resource List
-GET /api/resources
-
-Example:
-curl -X GET "http://localhost:8000/api/resources" \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer <token>"
+Body:
+Tidak perlu.
 
 
-7. Paginated List Data
-GET /api/log-sheets/{resource}
+5. LOGOUT
 
-Supported query params:
-- page: page number
-- per_page: rows per page, max 100
-- resource-specific filters, for example log_date, lokasi, operator_name, location_code, unit_name, email, full_name
+Method:
+POST
 
-Example:
-curl -X GET "http://localhost:8000/api/log-sheets/wtp?per_page=10&lokasi=LOC001" \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer <token>"
+URL:
+https://wtpkpapi.citasys.net/api/auth/logout
 
-Example:
-curl -X GET "http://localhost:8000/api/log-sheets/chemical-usage?log_date=2026-05-13" \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer <token>"
+Kegunaan:
+Logout dan revoke token.
 
+Butuh token:
+Ya.
 
-8. Show Detail Data
-GET /api/log-sheets/{resource}/{id}
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
 
-Example:
-curl -X GET "http://localhost:8000/api/log-sheets/wtp/1" \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer <token>"
+Body:
+Tidak perlu.
 
 
-9. Create Data
-POST /api/log-sheets/{resource}
+6. RESOURCE LIST
 
-Example WTP body:
+Method:
+GET
+
+URL:
+https://wtpkpapi.citasys.net/api/resources
+
+Kegunaan:
+Melihat semua nama resource yang bisa dipakai di endpoint log-sheets.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Body:
+Tidak perlu.
+
+
+7. LIST DATA RESOURCE
+
+Method:
+GET
+
+URL pattern:
+https://wtpkpapi.citasys.net/api/log-sheets/{resource}
+
+Kegunaan:
+Melihat data berdasarkan resource dengan pagination.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Params tab di Postman:
+- page: nomor halaman, contoh 1.
+- per_page: jumlah data per halaman, contoh 10.
+- filter sesuai resource, contoh log_date, shift, lokasi, operator_name, location_code, unit_name, username, email, full_name.
+
+Contoh URL list WTP:
+https://wtpkpapi.citasys.net/api/log-sheets/wtp?page=1&per_page=10
+
+Contoh URL filter WTP by lokasi:
+https://wtpkpapi.citasys.net/api/log-sheets/wtp?per_page=10&lokasi=LOC001
+
+Contoh URL filter Chemical Usage by tanggal:
+https://wtpkpapi.citasys.net/api/log-sheets/chemical-usage?log_date=2026-05-13
+
+Body:
+Tidak perlu.
+
+Catatan response:
+Untuk resource yang punya field lokasi, response tetap menampilkan lokasi sebagai kode dan menambahkan location_name dari master_locations.
+
+
+8. DETAIL DATA RESOURCE
+
+Method:
+GET
+
+URL pattern:
+https://wtpkpapi.citasys.net/api/log-sheets/{resource}/{id}
+
+Contoh URL:
+https://wtpkpapi.citasys.net/api/log-sheets/wtp/1
+
+Kegunaan:
+Melihat satu data berdasarkan id.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Body:
+Tidak perlu.
+
+Catatan response:
+Untuk resource yang punya field lokasi, response tetap menampilkan lokasi sebagai kode dan menambahkan location_name dari master_locations.
+
+
+9. CREATE DATA RESOURCE
+
+Method:
+POST
+
+URL pattern:
+https://wtpkpapi.citasys.net/api/log-sheets/{resource}
+
+Contoh URL:
+https://wtpkpapi.citasys.net/api/log-sheets/wtp
+
+Kegunaan:
+Menambah data baru pada resource.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer <token>
+
+Catatan:
+- Untuk logsheet, operator_name otomatis dari full_name user login.
+- Body harus berisi field yang valid sesuai resource.
+- Field shift menerima Shift 1, Shift 2, atau Shift 3. API menyimpan nilai tersebut sebagai Shift Pagi, Shift Siang, atau Shift Malam agar konsisten dengan data lama.
+
+Contoh Body raw JSON untuk WTP:
 {
   "log_date": "2026-05-13 08:00:00",
   "shift": "Shift 1",
   "lokasi": "LOC001",
-  "ph": 7.123,
-  "cond": 12.345,
-  "tds": 10.25,
-  "p_alk": 1.2,
-  "m_alk": 2.3,
-  "th": 3.4,
-  "sio2": 4.5
+  "ph": 7.1,
+  "cond": 12.3,
+  "tds": 10.2,
+  "sio2": 10.2
 }
 
-Example:
-curl -X POST "http://localhost:8000/api/log-sheets/wtp" \
-  -H "Accept: application/json" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d "{\"lokasi\":\"LOC001\",\"ph\":7.1,\"cond\":12.3}"
-
-Example Chemical Usage body:
+Contoh Body raw JSON untuk Chemical Usage:
 {
   "log_date": "2026-05-13",
-  "pac": 10.500,
-  "poly": 2.250,
-  "bio_pre": 1.000
+  "pac": 10.5,
+  "poly": 2.25,
+  "bio_pre": 1
 }
 
-Example:
-curl -X POST "http://localhost:8000/api/log-sheets/chemical-usage" \
-  -H "Accept: application/json" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d "{\"pac\":10.5,\"poly\":2.25}"
+
+10. UPDATE DATA RESOURCE
+
+Method:
+PUT
+
+URL pattern:
+https://wtpkpapi.citasys.net/api/log-sheets/{resource}/{id}
+
+Contoh URL:
+https://wtpkpapi.citasys.net/api/log-sheets/wtp/1
+
+Kegunaan:
+Update data berdasarkan id.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer <token>
+
+Catatan:
+- Minimal kirim satu field yang valid.
+- Field yang tidak dikirim tidak berubah.
+- Untuk logsheet, operator_name akan otomatis memakai full_name user login ketika update.
+- Field shift menerima Shift 1, Shift 2, atau Shift 3. API menyimpan nilai tersebut sebagai Shift Pagi, Shift Siang, atau Shift Malam agar konsisten dengan data lama.
+
+Contoh Body raw JSON:
+{
+  "ph": 7.2,
+  "cond": 13.1
+}
 
 
-10. Update Data
-PUT /api/log-sheets/{resource}/{id}
+11. DELETE DATA RESOURCE
 
-At least one valid field must be provided in the request body.
+Method:
+DELETE
 
-Example:
-curl -X PUT "http://localhost:8000/api/log-sheets/wtp/1" \
-  -H "Accept: application/json" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <token>" \
-  -d "{\"ph\":7.2}"
+URL pattern:
+https://wtpkpapi.citasys.net/api/log-sheets/{resource}/{id}
+
+Contoh URL:
+https://wtpkpapi.citasys.net/api/log-sheets/wtp/1
+
+Kegunaan:
+Menghapus data berdasarkan id.
+
+Butuh token:
+Ya.
+
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+
+Body:
+Tidak perlu.
 
 
-11. Delete Data
-DELETE /api/log-sheets/{resource}/{id}
+RESOURCE YANG TERSEDIA
 
-Example:
-curl -X DELETE "http://localhost:8000/api/log-sheets/wtp/1" \
-  -H "Accept: application/json" \
-  -H "Authorization: Bearer <token>"
+Format endpoint CRUD untuk semua resource di bawah:
+- List:   GET    https://wtpkpapi.citasys.net/api/log-sheets/{resource}
+- Detail: GET    https://wtpkpapi.citasys.net/api/log-sheets/{resource}/{id}
+- Create: POST   https://wtpkpapi.citasys.net/api/log-sheets/{resource}
+- Update: PUT    https://wtpkpapi.citasys.net/api/log-sheets/{resource}/{id}
+- Delete: DELETE https://wtpkpapi.citasys.net/api/log-sheets/{resource}/{id}
+
+Contoh jika resource adalah ro-process:
+- GET    https://wtpkpapi.citasys.net/api/log-sheets/ro-process
+- GET    https://wtpkpapi.citasys.net/api/log-sheets/ro-process/1
+- POST   https://wtpkpapi.citasys.net/api/log-sheets/ro-process
+- PUT    https://wtpkpapi.citasys.net/api/log-sheets/ro-process/1
+- DELETE https://wtpkpapi.citasys.net/api/log-sheets/ro-process/1
 
 
-RESOURCE NAMES AND COMMON BODY FIELDS
+MASTER DAN AUTH RESOURCE
 
-Note:
-- operator_name appears in log sheet resources, but it is automatically filled from the logged-in user's full_name.
-- You do not need to send operator_name in POST/PUT bodies.
-
-allowed-domains:
+allowed-domains
+Primary id: domain_id
+Fields:
 - domain_name
 
-roles:
+roles
+Primary id: role_id
+Fields:
 - role_name
 
-users:
+users
+Primary id: user_id
+Fields:
 - username
 - email
 - full_name
 - role_id
 - created_at
 
-user-auth:
+user-auth
+Primary id: user_id
+Fields:
 - user_id
 - password_hash
 - salt
 
-master-locations:
+master-locations
+Primary id: location_code
+Fields:
 - location_code
 - location_name
 - ph_min
@@ -211,7 +414,9 @@ master-locations:
 - sio2_max
 - po4_max
 
-master-standard-ro:
+master-standard-ro
+Primary id: loc_id
+Fields:
 - loc_id
 - location_name
 - ph_min
@@ -226,7 +431,9 @@ master-standard-ro:
 - frc_max
 - turb_max
 
-master-standard-ro-process:
+master-standard-ro-process
+Primary id: loc_id
+Fields:
 - loc_id
 - location_name
 - ph_min
@@ -236,10 +443,21 @@ master-standard-ro-process:
 - turb_max
 - temp_max
 
-wtp:
+
+LOGSHEET RESOURCE
+
+wtp
+Primary id: log_id
+Filters:
 - log_date
 - shift
 - lokasi
+- operator_name
+Fields:
+- log_date
+- shift
+- lokasi
+- location_name (GET only, dari master_locations)
 - ph
 - cond
 - th
@@ -248,12 +466,21 @@ wtp:
 - m_alk
 - sio2
 - po4
-- operator_name
+- frc
+- turbidity
 
-ro-plant:
+ro-plant
+Primary id: log_id
+Filters:
 - log_date
 - shift
 - lokasi
+- operator_name
+Fields:
+- log_date
+- shift
+- lokasi
+- location_name (GET only, dari master_locations)
 - ph
 - cond
 - th
@@ -264,12 +491,19 @@ ro-plant:
 - iron
 - frc
 - turbidity
-- operator_name
 
-ro-process:
+ro-process
+Primary id: log_id
+Filters:
 - log_date
 - shift
 - lokasi
+- operator_name
+Fields:
+- log_date
+- shift
+- lokasi
+- location_name (GET only, dari master_locations)
 - ph
 - cond
 - th
@@ -282,12 +516,16 @@ ro-process:
 - turbidity
 - temp
 - coc
-- operator_name
 
-wwtp-ol:
+wwtp-ol
+Primary id: log_id
+Filters:
+- log_date
+- operator_name
+- unit_name
+Fields:
 - log_date
 - input_time
-- operator_name
 - unit_name
 - cu
 - zn
@@ -296,10 +534,14 @@ wwtp-ol:
 - fe
 - po5
 
-chemical-usage:
+chemical-usage
+Primary id: log_id
+Filters:
+- log_date
+- operator_name
+Fields:
 - log_date
 - input_time
-- operator_name
 - pac
 - poly
 - bio_pre
@@ -321,20 +563,29 @@ chemical-usage:
 - poly_wwtp_kgs
 - bio_wwtp_kgs
 
-coal-sieve:
+coal-sieve
+Primary id: log_id
+Filters:
+- log_date
+- operator_name
+Fields:
 - log_date
 - input_time
-- operator_name
 - size_above_10mm
 - size_6mm_10mm
 - size_4mm_6mm
 - size_below_4mm
 - total_percentage
 
-condenser:
+condenser
+Primary id: log_id
+Filters:
+- log_date
+- operator_name
+- unit_name
+Fields:
 - log_date
 - input_time
-- operator_name
 - unit_name
 - inlet_pres
 - outlet_pres
@@ -350,10 +601,14 @@ condenser:
 - acw_range
 - acw_approach
 
-mb-running-data:
+mb-running-data
+Primary id: log_id
+Filters:
+- log_date
+- operator_name
+Fields:
 - log_date
 - input_time
-- operator_name
 - mb_i
 - mb_ii
 - mb_i_obr_m3
@@ -361,10 +616,14 @@ mb-running-data:
 - rg_std_mb
 - last_obr_m3
 
-ro-pump-running-hours:
+ro-pump-running-hours
+Primary id: log_id
+Filters:
+- log_date
+- operator_name
+Fields:
 - log_date
 - input_time
-- operator_name
 - intake_val
 - mmf_bw
 - mmf_fp
@@ -376,10 +635,15 @@ ro-pump-running-hours:
 - raw_tr
 - mcw_val
 
-swro-uf-pressure:
+swro-uf-pressure
+Primary id: log_id
+Filters:
+- log_date
+- operator_name
+- location_code
+Fields:
 - log_date
 - input_time
-- operator_name
 - location_code
 - inlet_pres
 - outlet_pres
@@ -389,10 +653,15 @@ swro-uf-pressure:
 - reject_m3
 - permeate_avg_m3
 
-bwro-pressure:
+bwro-pressure
+Primary id: log_id
+Filters:
+- log_date
+- operator_name
+- location_code
+Fields:
 - log_date
 - input_time
-- operator_name
 - location_code
 - inlet_pres_1
 - inlet_pres_2
@@ -402,10 +671,15 @@ bwro-pressure:
 - reject_m3
 - permit_m3
 
-water-production:
+water-production
+Primary id: log_id
+Filters:
 - log_date
 - shift
 - operator_name
+Fields:
+- log_date
+- shift
 - dm_prod
 - dm_cons
 - dm_stock_mtr
@@ -431,3 +705,60 @@ water-production:
 - input_time_fw
 - input_time_ro
 - input_time_other
+
+
+CONTOH CEPAT DI POSTMAN
+
+Login:
+Method: POST
+URL: https://wtpkpapi.citasys.net/api/auth/login
+Headers:
+Accept: application/json
+Content-Type: application/json
+Body raw JSON:
+{
+  "username": "operator",
+  "password": "secret-password"
+}
+
+Ambil data WTP:
+Method: GET
+URL: https://wtpkpapi.citasys.net/api/log-sheets/wtp?per_page=10
+Headers:
+Accept: application/json
+Authorization: Bearer <token>
+Body:
+Tidak perlu.
+
+Tambah data WTP:
+Method: POST
+URL: https://wtpkpapi.citasys.net/api/log-sheets/wtp
+Headers:
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer <token>
+Catatan:
+Nilai shift yang diterima: Shift 1, Shift 2, Shift 3.
+Nilai shift yang disimpan: Shift Pagi, Shift Siang, Shift Malam.
+Body raw JSON:
+{
+  "log_date": "2026-05-13 08:00:00",
+  "shift": "Shift 1",
+  "lokasi": "LOC001",
+  "ph": 7.1,
+  "cond": 12.3,
+  "sio2": 10.2
+}
+
+Update data WTP:
+Method: PUT
+URL: https://wtpkpapi.citasys.net/api/log-sheets/wtp/1
+Headers:
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer <token>
+Body raw JSON:
+{
+  "shift": "Shift 2",
+  "ph": 7.2
+}
